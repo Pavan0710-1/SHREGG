@@ -2,14 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Egg Clicker Game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Title and SEO -->
-    <title>eggadiyan - Egg Clicker Game</title>
-    <meta name="description" content="Play eggadiyan, the addictive Egg Clicker Game! Click eggs, earn points, unlock upgrades, and have fun!">
-    <meta name="keywords" content="eggadiyan, egg clicker, clicker game, incremental game, adiyan">
-
-    <!-- Styles -->
     <style>
         body {
             background: #f9f6ef;
@@ -41,46 +35,61 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .upgrade-panel, .stats-panel, .prestige-panel {
-            margin: 20px auto;
-            max-width: 350px;
-            border-radius: 10px;
-            padding: 15px 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
         .upgrade-panel {
+            margin: 30px auto;
+            max-width: 350px;
             background: #fffbe7;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #e6d8b4;
+            padding: 20px;
         }
-        .stats-panel {
-            background: #f3f3f3;
-            color: #555;
-            font-size: 1rem;
-        }
-        .prestige-panel {
-            background: #e0f7fa;
-        }
-        .upgrade-btn, .prestige-btn {
+        .upgrade-btn {
             display: block;
             width: 100%;
             margin: 10px 0;
             padding: 12px;
             font-size: 1rem;
+            background: #ffe066;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s;
-        }
-        .upgrade-btn {
-            background: #ffe066;
         }
         .upgrade-btn:disabled {
             background: #e0e0e0;
             color: #aaa;
             cursor: not-allowed;
         }
+        .stats-panel {
+            margin: 20px auto;
+            max-width: 350px;
+            background: #f3f3f3;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #e6d8b4;
+            padding: 15px;
+            font-size: 1rem;
+            color: #555;
+        }
+        .prestige-panel {
+            margin: 30px auto;
+            max-width: 350px;
+            background: #e0f7fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #b2ebf2;
+            padding: 20px;
+        }
         .prestige-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 1rem;
             background: #00bcd4;
             color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
         .prestige-btn:disabled {
             background: #b2ebf2;
@@ -97,29 +106,68 @@
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-60px); }
         }
+        .shop-panel {
+            margin: 30px auto;
+            max-width: 350px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #b2dfdb;
+            padding: 20px;
+        }
+        .shop-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 1rem;
+            background: #a5d6a7;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .shop-btn:disabled {
+            background: #e0e0e0;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        .golden-egg {
+            position: absolute;
+            width: 60px;
+            z-index: 10;
+            cursor: pointer;
+            animation: goldenMove 3s linear forwards;
+        }
+        @keyframes goldenMove {
+            0% { top: 80px; left: 10vw; }
+            100% { top: 80px; left: 80vw; }
+        }
+        .save-btn, .load-btn, .reset-btn {
+            margin: 10px 5px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: none;
+            background: #ffe066;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <!-- Main heading -->
-    <h1>🥚 eggadiyan 🥚</h1>
+    <h1>🥚 Egg Clicker 🥚</h1>
     <div id="score">Eggs: 0</div>
-
-    <!-- Stats panel -->
     <div class="stats-panel" id="stats">
         <div>Eggs per Click: <span id="stat-epc">1</span></div>
         <div>Eggs per Second: <span id="stat-eps">0</span></div>
         <div>Total Eggs Clicked: <span id="stat-total-clicked">0</span></div>
         <div>Prestige Bonus: <span id="stat-prestige">0</span>%</div>
+        <div>Golden Eggs Collected: <span id="stat-golden">0</span></div>
     </div>
-
-    <!-- Egg button -->
     <button id="egg-btn">
         <img id="egg-img" src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Egg_%28food%29.png" alt="Egg">
     </button>
-
-    <!-- Upgrade panel -->
     <div class="upgrade-panel">
-        <h2>eggadiyan Upgrades</h2>
+        <h2>Upgrades</h2>
         <button class="upgrade-btn" id="upgrade-click" disabled>
             +1 Egg per Click (Cost: <span id="upgrade-click-cost">10</span>)
         </button>
@@ -130,18 +178,29 @@
             Chance for Golden Egg (Cost: <span id="upgrade-golden-cost">200</span>)
         </button>
     </div>
-
-    <!-- Prestige panel -->
+    <div class="shop-panel">
+        <h2>Shop</h2>
+        <button class="shop-btn" id="shop-double" disabled>
+            Double All Production (Cost: <span id="shop-double-cost">1000</span>)
+        </button>
+        <button class="shop-btn" id="shop-autoclick" disabled>
+            Auto Clicker (Cost: <span id="shop-autoclick-cost">500</span>)
+        </button>
+    </div>
     <div class="prestige-panel">
-        <h2>Prestige eggadiyan</h2>
+        <h2>Prestige</h2>
         <div>Reset for a permanent egg bonus!</div>
         <button class="prestige-btn" id="prestige-btn" disabled>
             Prestige (+10% bonus, requires 1000 eggs)
         </button>
     </div>
-
-    <!-- Game script -->
+    <div>
+        <button class="save-btn" id="save-btn">Save</button>
+        <button class="load-btn" id="load-btn">Load</button>
+        <button class="reset-btn" id="reset-btn">Reset</button>
+    </div>
     <script>
+        // Game state
         let eggs = 0;
         let eggsPerClick = 1;
         let eggsPerSecond = 0;
@@ -151,7 +210,13 @@
         let goldenEggChance = 0;
         let prestigeLevel = 0;
         let totalEggsClicked = 0;
+        let goldenEggsCollected = 0;
+        let shopDoubleCost = 1000;
+        let shopAutoclickCost = 500;
+        let hasDouble = false;
+        let hasAutoclick = false;
 
+        // DOM
         const scoreEl = document.getElementById('score');
         const eggBtn = document.getElementById('egg-btn');
         const upgradeClickBtn = document.getElementById('upgrade-click');
@@ -164,34 +229,71 @@
         const statEps = document.getElementById('stat-eps');
         const statTotalClicked = document.getElementById('stat-total-clicked');
         const statPrestige = document.getElementById('stat-prestige');
+        const statGolden = document.getElementById('stat-golden');
         const prestigeBtn = document.getElementById('prestige-btn');
+        const shopDoubleBtn = document.getElementById('shop-double');
+        const shopAutoclickBtn = document.getElementById('shop-autoclick');
+        const shopDoubleCostEl = document.getElementById('shop-double-cost');
+        const shopAutoclickCostEl = document.getElementById('shop-autoclick-cost');
+        const saveBtn = document.getElementById('save-btn');
+        const loadBtn = document.getElementById('load-btn');
+        const resetBtn = document.getElementById('reset-btn');
 
+        // UI update
         function updateUI() {
             scoreEl.textContent = `Eggs: ${eggs}`;
             upgradeClickCostEl.textContent = clickUpgradeCost;
             upgradeAutoCostEl.textContent = autoUpgradeCost;
             upgradeGoldenCostEl.textContent = goldenUpgradeCost;
+            shopDoubleCostEl.textContent = shopDoubleCost;
+            shopAutoclickCostEl.textContent = shopAutoclickCost;
             upgradeClickBtn.disabled = eggs < clickUpgradeCost;
             upgradeAutoBtn.disabled = eggs < autoUpgradeCost;
             upgradeGoldenBtn.disabled = eggs < goldenUpgradeCost || goldenEggChance > 0;
+            shopDoubleBtn.disabled = eggs < shopDoubleCost || hasDouble;
+            shopAutoclickBtn.disabled = eggs < shopAutoclickCost || hasAutoclick;
             statEpc.textContent = eggsPerClick;
             statEps.textContent = eggsPerSecond;
             statTotalClicked.textContent = totalEggsClicked;
             statPrestige.textContent = prestigeLevel * 10;
+            statGolden.textContent = goldenEggsCollected;
             prestigeBtn.disabled = eggs < 1000;
         }
 
+        // Floating egg animation
         function showFloatingEgg(amount, x, y, isGolden = false) {
             const el = document.createElement('div');
             el.className = 'floating-egg';
             el.style.left = `${x - 20}px`;
             el.style.top = `${y - 30}px`;
             el.style.color = isGolden ? '#ffd700' : '#b8860b';
-            el.textContent = isGolden ? `🥚 +${amount * 10}` : `+${amount}`;
+            el.textContent = isGolden ? `🥚 +${amount}` : `+${amount}`;
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 1000);
         }
 
+        // Golden egg event
+        function spawnGoldenEgg() {
+            if (goldenEggChance === 0) return;
+            if (document.querySelector('.golden-egg')) return;
+            const golden = document.createElement('img');
+            golden.src = "https://upload.wikimedia.org/wikipedia/commons/4/4c/Golden_egg.png";
+            golden.className = 'golden-egg';
+            golden.style.top = '80px';
+            golden.style.left = '10vw';
+            golden.addEventListener('click', function() {
+                let bonus = Math.floor(eggsPerClick * 50 * (1 + prestigeLevel * 0.1));
+                eggs += bonus;
+                goldenEggsCollected += 1;
+                showFloatingEgg(bonus, golden.getBoundingClientRect().left + 30, golden.getBoundingClientRect().top + 30, true);
+                golden.remove();
+                updateUI();
+            });
+            document.body.appendChild(golden);
+            setTimeout(() => golden.remove(), 3000);
+        }
+
+        // Main click
         eggBtn.addEventListener('click', (e) => {
             let bonus = 1 + prestigeLevel * 0.1;
             let earned = Math.floor(eggsPerClick * bonus);
@@ -203,10 +305,12 @@
             eggs += earned;
             totalEggsClicked += 1;
             updateUI();
+            // Floating egg animation
             const rect = eggBtn.getBoundingClientRect();
             showFloatingEgg(earned, rect.left + rect.width/2, rect.top + rect.height/2, isGolden);
         });
 
+        // Upgrades
         upgradeClickBtn.addEventListener('click', () => {
             if (eggs >= clickUpgradeCost) {
                 eggs -= clickUpgradeCost;
@@ -228,11 +332,31 @@
         upgradeGoldenBtn.addEventListener('click', () => {
             if (eggs >= goldenUpgradeCost && goldenEggChance === 0) {
                 eggs -= goldenUpgradeCost;
-                goldenEggChance = 0.05;
+                goldenEggChance = 0.05; // 5% chance
                 updateUI();
             }
         });
 
+        // Shop
+        shopDoubleBtn.addEventListener('click', () => {
+            if (eggs >= shopDoubleCost && !hasDouble) {
+                eggs -= shopDoubleCost;
+                eggsPerClick *= 2;
+                eggsPerSecond *= 2;
+                hasDouble = true;
+                updateUI();
+            }
+        });
+
+        shopAutoclickBtn.addEventListener('click', () => {
+            if (eggs >= shopAutoclickCost && !hasAutoclick) {
+                eggs -= shopAutoclickCost;
+                hasAutoclick = true;
+                updateUI();
+            }
+        });
+
+        // Prestige
         prestigeBtn.addEventListener('click', () => {
             if (eggs >= 1000) {
                 eggs = 0;
@@ -242,20 +366,101 @@
                 autoUpgradeCost = 50;
                 goldenUpgradeCost = 200;
                 goldenEggChance = 0;
+                hasDouble = false;
+                hasAutoclick = false;
+                shopDoubleCost = 1000;
+                shopAutoclickCost = 500;
                 prestigeLevel += 1;
                 updateUI();
                 alert('Prestige! You now earn 10% more eggs per click and per second.');
             }
         });
 
+        // Passive eggs per second
         setInterval(() => {
             let bonus = 1 + prestigeLevel * 0.1;
             eggs += Math.floor(eggsPerSecond * bonus);
             updateUI();
         }, 1000);
 
+        // Golden egg random event
+        setInterval(() => {
+            if (goldenEggChance > 0 && Math.random() < 0.02) {
+                spawnGoldenEgg();
+            }
+        }, 2000);
+
+        // Auto clicker
+        setInterval(() => {
+            if (hasAutoclick) {
+                let bonus = 1 + prestigeLevel * 0.1;
+                let earned = Math.floor(eggsPerClick * bonus);
+                eggs += earned;
+                totalEggsClicked += 1;
+                updateUI();
+            }
+        }, 1000);
+
+        // Enable upgrades if enough eggs
         setInterval(updateUI, 200);
 
+        // Save/Load/Reset
+        saveBtn.addEventListener('click', () => {
+            const save = {
+                eggs, eggsPerClick, eggsPerSecond, clickUpgradeCost, autoUpgradeCost, goldenUpgradeCost,
+                goldenEggChance, prestigeLevel, totalEggsClicked, goldenEggsCollected,
+                shopDoubleCost, shopAutoclickCost, hasDouble, hasAutoclick
+            };
+            localStorage.setItem('eggClickerSave', JSON.stringify(save));
+            alert('Game saved!');
+        });
+
+        loadBtn.addEventListener('click', () => {
+            const save = JSON.parse(localStorage.getItem('eggClickerSave'));
+            if (save) {
+                eggs = save.eggs;
+                eggsPerClick = save.eggsPerClick;
+                eggsPerSecond = save.eggsPerSecond;
+                clickUpgradeCost = save.clickUpgradeCost;
+                autoUpgradeCost = save.autoUpgradeCost;
+                goldenUpgradeCost = save.goldenUpgradeCost;
+                goldenEggChance = save.goldenEggChance;
+                prestigeLevel = save.prestigeLevel;
+                totalEggsClicked = save.totalEggsClicked;
+                goldenEggsCollected = save.goldenEggsCollected;
+                shopDoubleCost = save.shopDoubleCost;
+                shopAutoclickCost = save.shopAutoclickCost;
+                hasDouble = save.hasDouble;
+                hasAutoclick = save.hasAutoclick;
+                updateUI();
+                alert('Game loaded!');
+            } else {
+                alert('No save found!');
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset your game?')) {
+                eggs = 0;
+                eggsPerClick = 1;
+                eggsPerSecond = 0;
+                clickUpgradeCost = 10;
+                autoUpgradeCost = 50;
+                goldenUpgradeCost = 200;
+                goldenEggChance = 0;
+                prestigeLevel = 0;
+                totalEggsClicked = 0;
+                goldenEggsCollected = 0;
+                shopDoubleCost = 1000;
+                shopAutoclickCost = 500;
+                hasDouble = false;
+                hasAutoclick = false;
+                updateUI();
+                localStorage.removeItem('eggClickerSave');
+            }
+        });
+
+        // Initial UI
         updateUI();
     </script>
 </body>
