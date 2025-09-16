@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-   <title>adiyanegg</title>
-<h1>Welcome to adiyanegg Game!</h1>
-<meta name="description" content="Play the adiyanegg Egg Clicker Game online!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title and SEO -->
+    <title>eggadiyan - Egg Clicker Game</title>
+    <meta name="description" content="Play eggadiyan, the addictive Egg Clicker Game! Click eggs, earn points, unlock upgrades, and have fun!">
+    <meta name="keywords" content="eggadiyan, egg clicker, clicker game, incremental game, adiyan">
+
+    <!-- Styles -->
     <style>
         body {
             background: #f9f6ef;
@@ -36,61 +41,46 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .upgrade-panel {
-            margin: 30px auto;
+        .upgrade-panel, .stats-panel, .prestige-panel {
+            margin: 20px auto;
             max-width: 350px;
-            background: #fffbe7;
             border-radius: 10px;
-            box-shadow: 0 2px 8px #e6d8b4;
-            padding: 20px;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .upgrade-btn {
+        .upgrade-panel {
+            background: #fffbe7;
+        }
+        .stats-panel {
+            background: #f3f3f3;
+            color: #555;
+            font-size: 1rem;
+        }
+        .prestige-panel {
+            background: #e0f7fa;
+        }
+        .upgrade-btn, .prestige-btn {
             display: block;
             width: 100%;
             margin: 10px 0;
             padding: 12px;
             font-size: 1rem;
-            background: #ffe066;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s;
+        }
+        .upgrade-btn {
+            background: #ffe066;
         }
         .upgrade-btn:disabled {
             background: #e0e0e0;
             color: #aaa;
             cursor: not-allowed;
         }
-        .stats-panel {
-            margin: 20px auto;
-            max-width: 350px;
-            background: #f3f3f3;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #e6d8b4;
-            padding: 15px;
-            font-size: 1rem;
-            color: #555;
-        }
-        .prestige-panel {
-            margin: 30px auto;
-            max-width: 350px;
-            background: #e0f7fa;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #b2ebf2;
-            padding: 20px;
-        }
         .prestige-btn {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 12px;
-            font-size: 1rem;
             background: #00bcd4;
             color: #fff;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
         }
         .prestige-btn:disabled {
             background: #b2ebf2;
@@ -110,19 +100,26 @@
     </style>
 </head>
 <body>
-    <h1>🥚 Egg Clicker 🥚</h1>
+    <!-- Main heading -->
+    <h1>🥚 eggadiyan 🥚</h1>
     <div id="score">Eggs: 0</div>
+
+    <!-- Stats panel -->
     <div class="stats-panel" id="stats">
         <div>Eggs per Click: <span id="stat-epc">1</span></div>
         <div>Eggs per Second: <span id="stat-eps">0</span></div>
         <div>Total Eggs Clicked: <span id="stat-total-clicked">0</span></div>
         <div>Prestige Bonus: <span id="stat-prestige">0</span>%</div>
     </div>
+
+    <!-- Egg button -->
     <button id="egg-btn">
         <img id="egg-img" src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Egg_%28food%29.png" alt="Egg">
     </button>
+
+    <!-- Upgrade panel -->
     <div class="upgrade-panel">
-        <h2>Upgrades</h2>
+        <h2>eggadiyan Upgrades</h2>
         <button class="upgrade-btn" id="upgrade-click" disabled>
             +1 Egg per Click (Cost: <span id="upgrade-click-cost">10</span>)
         </button>
@@ -133,13 +130,17 @@
             Chance for Golden Egg (Cost: <span id="upgrade-golden-cost">200</span>)
         </button>
     </div>
+
+    <!-- Prestige panel -->
     <div class="prestige-panel">
-        <h2>Prestige</h2>
+        <h2>Prestige eggadiyan</h2>
         <div>Reset for a permanent egg bonus!</div>
         <button class="prestige-btn" id="prestige-btn" disabled>
             Prestige (+10% bonus, requires 1000 eggs)
         </button>
     </div>
+
+    <!-- Game script -->
     <script>
         let eggs = 0;
         let eggsPerClick = 1;
@@ -202,7 +203,6 @@
             eggs += earned;
             totalEggsClicked += 1;
             updateUI();
-            // Floating egg animation
             const rect = eggBtn.getBoundingClientRect();
             showFloatingEgg(earned, rect.left + rect.width/2, rect.top + rect.height/2, isGolden);
         });
@@ -228,7 +228,7 @@
         upgradeGoldenBtn.addEventListener('click', () => {
             if (eggs >= goldenUpgradeCost && goldenEggChance === 0) {
                 eggs -= goldenUpgradeCost;
-                goldenEggChance = 0.05; // 5% chance
+                goldenEggChance = 0.05;
                 updateUI();
             }
         });
@@ -248,14 +248,12 @@
             }
         });
 
-        // Passive eggs per second
         setInterval(() => {
             let bonus = 1 + prestigeLevel * 0.1;
             eggs += Math.floor(eggsPerSecond * bonus);
             updateUI();
         }, 1000);
 
-        // Enable upgrades if enough eggs
         setInterval(updateUI, 200);
 
         updateUI();
