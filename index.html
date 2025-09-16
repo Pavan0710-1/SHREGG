@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Egg Clicker Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #f9f6ef;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 30px;
+            color: #b8860b;
+        }
+        #egg-btn {
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            margin: 40px 0 20px 0;
+        }
+        #egg-img {
+            width: 180px;
+            transition: transform 0.1s;
+        }
+        #egg-btn:active #egg-img {
+            transform: scale(0.92);
+        }
+        #score {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .upgrade-panel {
+            margin: 30px auto;
+            max-width: 350px;
+            background: #fffbe7;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #e6d8b4;
+            padding: 20px;
+        }
+        .upgrade-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 1rem;
+            background: #ffe066;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .upgrade-btn:disabled {
+            background: #e0e0e0;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        .stats-panel {
+            margin: 20px auto;
+            max-width: 350px;
+            background: #f3f3f3;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #e6d8b4;
+            padding: 15px;
+            font-size: 1rem;
+            color: #555;
+        }
+        .prestige-panel {
+            margin: 30px auto;
+            max-width: 350px;
+            background: #e0f7fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #b2ebf2;
+            padding: 20px;
+        }
+        .prestige-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 1rem;
+            background: #00bcd4;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .prestige-btn:disabled {
+            background: #b2ebf2;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        .floating-egg {
+            position: absolute;
+            pointer-events: none;
+            font-size: 1.5rem;
+            animation: floatUp 1s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-60px); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🥚 Egg Clicker 🥚</h1>
+    <div id="score">Eggs: 0</div>
+    <div class="stats-panel" id="stats">
+        <div>Eggs per Click: <span id="stat-epc">1</span></div>
+        <div>Eggs per Second: <span id="stat-eps">0</span></div>
+        <div>Total Eggs Clicked: <span id="stat-total-clicked">0</span></div>
+        <div>Prestige Bonus: <span id="stat-prestige">0</span>%</div>
+    </div>
+    <button id="egg-btn">
+        <img id="egg-img" src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Egg_%28food%29.png" alt="Egg">
+    </button>
+    <div class="upgrade-panel">
+        <h2>Upgrades</h2>
+        <button class="upgrade-btn" id="upgrade-click" disabled>
+            +1 Egg per Click (Cost: <span id="upgrade-click-cost">10</span>)
+        </button>
+        <button class="upgrade-btn" id="upgrade-auto" disabled>
+            +1 Egg per Second (Cost: <span id="upgrade-auto-cost">50</span>)
+        </button>
+        <button class="upgrade-btn" id="upgrade-golden" disabled>
+            Chance for Golden Egg (Cost: <span id="upgrade-golden-cost">200</span>)
+        </button>
+    </div>
+    <div class="prestige-panel">
+        <h2>Prestige</h2>
+        <div>Reset for a permanent egg bonus!</div>
+        <button class="prestige-btn" id="prestige-btn" disabled>
+            Prestige (+10% bonus, requires 1000 eggs)
+        </button>
+    </div>
+    <script>
+        let eggs = 0;
+        let eggsPerClick = 1;
+        let eggsPerSecond = 0;
+        let clickUpgradeCost = 10;
+        let autoUpgradeCost = 50;
+        let goldenUpgradeCost = 200;
+        let goldenEggChance = 0;
+        let prestigeLevel = 0;
+        let totalEggsClicked = 0;
+
+        const scoreEl = document.getElementById('score');
+        const eggBtn = document.getElementById('egg-btn');
+        const upgradeClickBtn = document.getElementById('upgrade-click');
+        const upgradeAutoBtn = document.getElementById('upgrade-auto');
+        const upgradeGoldenBtn = document.getElementById('upgrade-golden');
+        const upgradeClickCostEl = document.getElementById('upgrade-click-cost');
+        const upgradeAutoCostEl = document.getElementById('upgrade-auto-cost');
+        const upgradeGoldenCostEl = document.getElementById('upgrade-golden-cost');
+        const statEpc = document.getElementById('stat-epc');
+        const statEps = document.getElementById('stat-eps');
+        const statTotalClicked = document.getElementById('stat-total-clicked');
+        const statPrestige = document.getElementById('stat-prestige');
+        const prestigeBtn = document.getElementById('prestige-btn');
+
+        function updateUI() {
+            scoreEl.textContent = `Eggs: ${eggs}`;
+            upgradeClickCostEl.textContent = clickUpgradeCost;
+            upgradeAutoCostEl.textContent = autoUpgradeCost;
+            upgradeGoldenCostEl.textContent = goldenUpgradeCost;
+            upgradeClickBtn.disabled = eggs < clickUpgradeCost;
+            upgradeAutoBtn.disabled = eggs < autoUpgradeCost;
+            upgradeGoldenBtn.disabled = eggs < goldenUpgradeCost || goldenEggChance > 0;
+            statEpc.textContent = eggsPerClick;
+            statEps.textContent = eggsPerSecond;
+            statTotalClicked.textContent = totalEggsClicked;
+            statPrestige.textContent = prestigeLevel * 10;
+            prestigeBtn.disabled = eggs < 1000;
+        }
+
+        function showFloatingEgg(amount, x, y, isGolden = false) {
+            const el = document.createElement('div');
+            el.className = 'floating-egg';
+            el.style.left = `${x - 20}px`;
+            el.style.top = `${y - 30}px`;
+            el.style.color = isGolden ? '#ffd700' : '#b8860b';
+            el.textContent = isGolden ? `🥚 +${amount * 10}` : `+${amount}`;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        eggBtn.addEventListener('click', (e) => {
+            let bonus = 1 + prestigeLevel * 0.1;
+            let earned = Math.floor(eggsPerClick * bonus);
+            let isGolden = false;
+            if (goldenEggChance > 0 && Math.random() < goldenEggChance) {
+                earned *= 10;
+                isGolden = true;
+            }
+            eggs += earned;
+            totalEggsClicked += 1;
+            updateUI();
+            // Floating egg animation
+            const rect = eggBtn.getBoundingClientRect();
+            showFloatingEgg(earned, rect.left + rect.width/2, rect.top + rect.height/2, isGolden);
+        });
+
+        upgradeClickBtn.addEventListener('click', () => {
+            if (eggs >= clickUpgradeCost) {
+                eggs -= clickUpgradeCost;
+                eggsPerClick += 1;
+                clickUpgradeCost = Math.floor(clickUpgradeCost * 1.7);
+                updateUI();
+            }
+        });
+
+        upgradeAutoBtn.addEventListener('click', () => {
+            if (eggs >= autoUpgradeCost) {
+                eggs -= autoUpgradeCost;
+                eggsPerSecond += 1;
+                autoUpgradeCost = Math.floor(autoUpgradeCost * 2);
+                updateUI();
+            }
+        });
+
+        upgradeGoldenBtn.addEventListener('click', () => {
+            if (eggs >= goldenUpgradeCost && goldenEggChance === 0) {
+                eggs -= goldenUpgradeCost;
+                goldenEggChance = 0.05; // 5% chance
+                updateUI();
+            }
+        });
+
+        prestigeBtn.addEventListener('click', () => {
+            if (eggs >= 1000) {
+                eggs = 0;
+                eggsPerClick = 1;
+                eggsPerSecond = 0;
+                clickUpgradeCost = 10;
+                autoUpgradeCost = 50;
+                goldenUpgradeCost = 200;
+                goldenEggChance = 0;
+                prestigeLevel += 1;
+                updateUI();
+                alert('Prestige! You now earn 10% more eggs per click and per second.');
+            }
+        });
+
+        // Passive eggs per second
+        setInterval(() => {
+            let bonus = 1 + prestigeLevel * 0.1;
+            eggs += Math.floor(eggsPerSecond * bonus);
+            updateUI();
+        }, 1000);
+
+        // Enable upgrades if enough eggs
+        setInterval(updateUI, 200);
+
+        updateUI();
+    </script>
+</body>
+</html>
