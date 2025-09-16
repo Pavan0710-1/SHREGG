@@ -101,46 +101,33 @@
             pointer-events: none;
             font-size: 1.5rem;
             animation: floatUp 1s ease-out forwards;
+            z-index: 10;
         }
         @keyframes floatUp {
             0% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-60px); }
         }
-        .shop-panel {
-            margin: 30px auto;
-            max-width: 350px;
-            background: #e8f5e9;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px #b2dfdb;
-            padding: 20px;
-        }
-        .shop-btn {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            padding: 12px;
-            font-size: 1rem;
-            background: #a5d6a7;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .shop-btn:disabled {
-            background: #e0e0e0;
-            color: #aaa;
-            cursor: not-allowed;
-        }
-        .golden-egg {
+        .flying-egg {
             position: absolute;
-            width: 60px;
-            z-index: 10;
-            cursor: pointer;
-            animation: goldenMove 3s linear forwards;
+            width: 40px;
+            z-index: 5;
+            pointer-events: none;
+            animation: flyEgg 2s linear forwards;
         }
-        @keyframes goldenMove {
-            0% { top: 80px; left: 10vw; }
-            100% { top: 80px; left: 80vw; }
+        @keyframes flyEgg {
+            0% { opacity: 1; top: 100vh; left: 10vw; }
+            100% { opacity: 0; top: -60px; left: 90vw; }
+        }
+        .shrek {
+            position: absolute;
+            width: 80px;
+            z-index: 20;
+            cursor: pointer;
+            animation: shrekMove 6s linear forwards;
+        }
+        @keyframes shrekMove {
+            0% { top: 120px; left: -100px; }
+            100% { top: 120px; left: 100vw; }
         }
         .save-btn, .load-btn, .reset-btn {
             margin: 10px 5px;
@@ -161,7 +148,7 @@
         <div>Eggs per Second: <span id="stat-eps">0</span></div>
         <div>Total Eggs Clicked: <span id="stat-total-clicked">0</span></div>
         <div>Prestige Bonus: <span id="stat-prestige">0</span>%</div>
-        <div>Golden Eggs Collected: <span id="stat-golden">0</span></div>
+        <div>Shrek Visits: <span id="stat-shrek">0</span></div>
     </div>
     <button id="egg-btn">
         <img id="egg-img" src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Egg_%28food%29.png" alt="Egg">
@@ -178,15 +165,6 @@
             Chance for Golden Egg (Cost: <span id="upgrade-golden-cost">200</span>)
         </button>
     </div>
-    <div class="shop-panel">
-        <h2>Shop</h2>
-        <button class="shop-btn" id="shop-double" disabled>
-            Double All Production (Cost: <span id="shop-double-cost">1000</span>)
-        </button>
-        <button class="shop-btn" id="shop-autoclick" disabled>
-            Auto Clicker (Cost: <span id="shop-autoclick-cost">500</span>)
-        </button>
-    </div>
     <div class="prestige-panel">
         <h2>Prestige</h2>
         <div>Reset for a permanent egg bonus!</div>
@@ -199,6 +177,7 @@
         <button class="load-btn" id="load-btn">Load</button>
         <button class="reset-btn" id="reset-btn">Reset</button>
     </div>
+    <audio id="shrek-audio" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124bfae6e8.mp3"></audio>
     <script>
         // Game state
         let eggs = 0;
@@ -210,11 +189,7 @@
         let goldenEggChance = 0;
         let prestigeLevel = 0;
         let totalEggsClicked = 0;
-        let goldenEggsCollected = 0;
-        let shopDoubleCost = 1000;
-        let shopAutoclickCost = 500;
-        let hasDouble = false;
-        let hasAutoclick = false;
+        let shrekVisits = 0;
 
         // DOM
         const scoreEl = document.getElementById('score');
@@ -229,15 +204,12 @@
         const statEps = document.getElementById('stat-eps');
         const statTotalClicked = document.getElementById('stat-total-clicked');
         const statPrestige = document.getElementById('stat-prestige');
-        const statGolden = document.getElementById('stat-golden');
+        const statShrek = document.getElementById('stat-shrek');
         const prestigeBtn = document.getElementById('prestige-btn');
-        const shopDoubleBtn = document.getElementById('shop-double');
-        const shopAutoclickBtn = document.getElementById('shop-autoclick');
-        const shopDoubleCostEl = document.getElementById('shop-double-cost');
-        const shopAutoclickCostEl = document.getElementById('shop-autoclick-cost');
         const saveBtn = document.getElementById('save-btn');
         const loadBtn = document.getElementById('load-btn');
         const resetBtn = document.getElementById('reset-btn');
+        const shrekAudio = document.getElementById('shrek-audio');
 
         // UI update
         function updateUI() {
@@ -245,18 +217,14 @@
             upgradeClickCostEl.textContent = clickUpgradeCost;
             upgradeAutoCostEl.textContent = autoUpgradeCost;
             upgradeGoldenCostEl.textContent = goldenUpgradeCost;
-            shopDoubleCostEl.textContent = shopDoubleCost;
-            shopAutoclickCostEl.textContent = shopAutoclickCost;
             upgradeClickBtn.disabled = eggs < clickUpgradeCost;
             upgradeAutoBtn.disabled = eggs < autoUpgradeCost;
             upgradeGoldenBtn.disabled = eggs < goldenUpgradeCost || goldenEggChance > 0;
-            shopDoubleBtn.disabled = eggs < shopDoubleCost || hasDouble;
-            shopAutoclickBtn.disabled = eggs < shopAutoclickCost || hasAutoclick;
             statEpc.textContent = eggsPerClick;
             statEps.textContent = eggsPerSecond;
             statTotalClicked.textContent = totalEggsClicked;
             statPrestige.textContent = prestigeLevel * 10;
-            statGolden.textContent = goldenEggsCollected;
+            statShrek.textContent = shrekVisits;
             prestigeBtn.disabled = eggs < 1000;
         }
 
@@ -267,30 +235,42 @@
             el.style.left = `${x - 20}px`;
             el.style.top = `${y - 30}px`;
             el.style.color = isGolden ? '#ffd700' : '#b8860b';
-            el.textContent = isGolden ? `🥚 +${amount}` : `+${amount}`;
+            el.textContent = isGolden ? `🥚 +${amount * 10}` : `+${amount}`;
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 1000);
         }
 
-        // Golden egg event
-        function spawnGoldenEgg() {
-            if (goldenEggChance === 0) return;
-            if (document.querySelector('.golden-egg')) return;
-            const golden = document.createElement('img');
-            golden.src = "https://upload.wikimedia.org/wikipedia/commons/4/4c/Golden_egg.png";
-            golden.className = 'golden-egg';
-            golden.style.top = '80px';
-            golden.style.left = '10vw';
-            golden.addEventListener('click', function() {
-                let bonus = Math.floor(eggsPerClick * 50 * (1 + prestigeLevel * 0.1));
-                eggs += bonus;
-                goldenEggsCollected += 1;
-                showFloatingEgg(bonus, golden.getBoundingClientRect().left + 30, golden.getBoundingClientRect().top + 30, true);
-                golden.remove();
+        // Flying eggs animation
+        function spawnFlyingEgg() {
+            const egg = document.createElement('img');
+            egg.src = "https://upload.wikimedia.org/wikipedia/commons/7/7b/Egg_%28food%29.png";
+            egg.className = 'flying-egg';
+            egg.style.top = `${window.innerHeight}px`;
+            egg.style.left = `${Math.random() * 80 + 10}vw`;
+            document.body.appendChild(egg);
+            setTimeout(() => egg.remove(), 2000);
+        }
+
+        // Shrek event
+        function spawnShrek() {
+            if (document.querySelector('.shrek')) return;
+            const shrek = document.createElement('img');
+            shrek.src = "https://upload.wikimedia.org/wikipedia/en/5/5c/Shrek_%28character%29.png";
+            shrek.className = 'shrek';
+            shrek.style.top = '120px';
+            shrek.style.left = '-100px';
+            shrek.title = "Click me for a bonus!";
+            shrek.addEventListener('click', function() {
+                eggs += 500 + prestigeLevel * 100;
+                shrekVisits += 1;
                 updateUI();
+                shrekAudio.currentTime = 0;
+                shrekAudio.play();
+                showFloatingEgg(500 + prestigeLevel * 100, shrek.getBoundingClientRect().left + 40, shrek.getBoundingClientRect().top + 40, true);
+                shrek.remove();
             });
-            document.body.appendChild(golden);
-            setTimeout(() => golden.remove(), 3000);
+            document.body.appendChild(shrek);
+            setTimeout(() => shrek.remove(), 6000);
         }
 
         // Main click
@@ -337,26 +317,6 @@
             }
         });
 
-        // Shop
-        shopDoubleBtn.addEventListener('click', () => {
-            if (eggs >= shopDoubleCost && !hasDouble) {
-                eggs -= shopDoubleCost;
-                eggsPerClick *= 2;
-                eggsPerSecond *= 2;
-                hasDouble = true;
-                updateUI();
-            }
-        });
-
-        shopAutoclickBtn.addEventListener('click', () => {
-            if (eggs >= shopAutoclickCost && !hasAutoclick) {
-                eggs -= shopAutoclickCost;
-                hasAutoclick = true;
-                updateUI();
-            }
-        });
-
-        // Prestige
         prestigeBtn.addEventListener('click', () => {
             if (eggs >= 1000) {
                 eggs = 0;
@@ -366,10 +326,6 @@
                 autoUpgradeCost = 50;
                 goldenUpgradeCost = 200;
                 goldenEggChance = 0;
-                hasDouble = false;
-                hasAutoclick = false;
-                shopDoubleCost = 1000;
-                shopAutoclickCost = 500;
                 prestigeLevel += 1;
                 updateUI();
                 alert('Prestige! You now earn 10% more eggs per click and per second.');
@@ -383,23 +339,15 @@
             updateUI();
         }, 1000);
 
-        // Golden egg random event
+        // Flying eggs every 2 seconds
         setInterval(() => {
-            if (goldenEggChance > 0 && Math.random() < 0.02) {
-                spawnGoldenEgg();
-            }
+            if (Math.random() < 0.5) spawnFlyingEgg();
         }, 2000);
 
-        // Auto clicker
+        // Shrek event every 30-60 seconds
         setInterval(() => {
-            if (hasAutoclick) {
-                let bonus = 1 + prestigeLevel * 0.1;
-                let earned = Math.floor(eggsPerClick * bonus);
-                eggs += earned;
-                totalEggsClicked += 1;
-                updateUI();
-            }
-        }, 1000);
+            if (Math.random() < 0.03) spawnShrek();
+        }, 2000);
 
         // Enable upgrades if enough eggs
         setInterval(updateUI, 200);
@@ -408,8 +356,7 @@
         saveBtn.addEventListener('click', () => {
             const save = {
                 eggs, eggsPerClick, eggsPerSecond, clickUpgradeCost, autoUpgradeCost, goldenUpgradeCost,
-                goldenEggChance, prestigeLevel, totalEggsClicked, goldenEggsCollected,
-                shopDoubleCost, shopAutoclickCost, hasDouble, hasAutoclick
+                goldenEggChance, prestigeLevel, totalEggsClicked, shrekVisits
             };
             localStorage.setItem('eggClickerSave', JSON.stringify(save));
             alert('Game saved!');
@@ -427,11 +374,7 @@
                 goldenEggChance = save.goldenEggChance;
                 prestigeLevel = save.prestigeLevel;
                 totalEggsClicked = save.totalEggsClicked;
-                goldenEggsCollected = save.goldenEggsCollected;
-                shopDoubleCost = save.shopDoubleCost;
-                shopAutoclickCost = save.shopAutoclickCost;
-                hasDouble = save.hasDouble;
-                hasAutoclick = save.hasAutoclick;
+                shrekVisits = save.shrekVisits || 0;
                 updateUI();
                 alert('Game loaded!');
             } else {
@@ -450,17 +393,30 @@
                 goldenEggChance = 0;
                 prestigeLevel = 0;
                 totalEggsClicked = 0;
-                goldenEggsCollected = 0;
-                shopDoubleCost = 1000;
-                shopAutoclickCost = 500;
-                hasDouble = false;
-                hasAutoclick = false;
+                shrekVisits = 0;
                 updateUI();
                 localStorage.removeItem('eggClickerSave');
             }
         });
 
-        // Initial UI
+        // Load on start
+        window.onload = function() {
+            const save = JSON.parse(localStorage.getItem('eggClickerSave'));
+            if (save) {
+                eggs = save.eggs;
+                eggsPerClick = save.eggsPerClick;
+                eggsPerSecond = save.eggsPerSecond;
+                clickUpgradeCost = save.clickUpgradeCost;
+                autoUpgradeCost = save.autoUpgradeCost;
+                goldenUpgradeCost = save.goldenUpgradeCost;
+                goldenEggChance = save.goldenEggChance;
+                prestigeLevel = save.prestigeLevel;
+                totalEggsClicked = save.totalEggsClicked;
+                shrekVisits = save.shrekVisits || 0;
+            }
+            updateUI();
+        };
+
         updateUI();
     </script>
 </body>
