@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Egg Clicker Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: #f9f6ef;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 30px;
+            color: #b8860b;
+        }
+        #egg-btn {
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            margin: 40px 0 20px 0;
+        }
+        #egg-img {
+            width: 180px;
+            transition: transform 0.1s;
+        }
+        #egg-btn:active #egg-img {
+            transform: scale(0.92);
+        }
+        #score {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .upgrade-panel {
+            margin: 30px auto;
+            max-width: 350px;
+            background: #fffbe7;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #e6d8b4;
+            padding: 20px;
+        }
+        .upgrade-btn {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 1rem;
+            background: #ffe066;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .upgrade-btn:disabled {
+            background: #e0e0e0;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>🥚 Egg Clicker 🥚</h1>
+    <div id="score">Eggs: 0</div>
+    <button id="egg-btn">
+        <img id="egg-img" src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Egg_%28food%29.png" alt="Egg">
+    </button>
+    <div class="upgrade-panel">
+        <h2>Upgrades</h2>
+        <button class="upgrade-btn" id="upgrade-click" disabled>
+            +1 Egg per Click (Cost: <span id="upgrade-click-cost">10</span>)
+        </button>
+        <button class="upgrade-btn" id="upgrade-auto" disabled>
+            +1 Egg per Second (Cost: <span id="upgrade-auto-cost">50</span>)
+        </button>
+    </div>
+    <script>
+        let eggs = 0;
+        let eggsPerClick = 1;
+        let eggsPerSecond = 0;
+
+        let clickUpgradeCost = 10;
+        let autoUpgradeCost = 50;
+
+        const scoreEl = document.getElementById('score');
+        const eggBtn = document.getElementById('egg-btn');
+        const upgradeClickBtn = document.getElementById('upgrade-click');
+        const upgradeAutoBtn = document.getElementById('upgrade-auto');
+        const upgradeClickCostEl = document.getElementById('upgrade-click-cost');
+        const upgradeAutoCostEl = document.getElementById('upgrade-auto-cost');
+
+        function updateUI() {
+            scoreEl.textContent = `Eggs: ${eggs}`;
+            upgradeClickCostEl.textContent = clickUpgradeCost;
+            upgradeAutoCostEl.textContent = autoUpgradeCost;
+            upgradeClickBtn.disabled = eggs < clickUpgradeCost;
+            upgradeAutoBtn.disabled = eggs < autoUpgradeCost;
+        }
+
+        eggBtn.addEventListener('click', () => {
+            eggs += eggsPerClick;
+            updateUI();
+        });
+
+        upgradeClickBtn.addEventListener('click', () => {
+            if (eggs >= clickUpgradeCost) {
+                eggs -= clickUpgradeCost;
+                eggsPerClick += 1;
+                clickUpgradeCost = Math.floor(clickUpgradeCost * 1.7);
+                updateUI();
+            }
+        });
+
+        upgradeAutoBtn.addEventListener('click', () => {
+            if (eggs >= autoUpgradeCost) {
+                eggs -= autoUpgradeCost;
+                eggsPerSecond += 1;
+                autoUpgradeCost = Math.floor(autoUpgradeCost * 2);
+                updateUI();
+            }
+        });
+
+        // Passive eggs per second
+        setInterval(() => {
+            eggs += eggsPerSecond;
+            updateUI();
+        }, 1000);
+
+        // Enable upgrades if enough eggs
+        setInterval(updateUI, 200);
+
+        updateUI();
+    </script>
+</body>
+</html>
